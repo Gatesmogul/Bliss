@@ -34,16 +34,21 @@ const startServer = async () => {
       console.warn('⚠️  WARNING: Database connection string is missing in .env');
     }
 
+    // Connect to Database
     await connectDB();
     
+    // Define Port
     const PORT = process.env.PORT || 5000;
-    const server = app.listen(PORT, () => {
+
+    // Bind to '0.0.0.0' to allow external traffic on Render/Cloud hosting
+    const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`
   🚀 Bliss API is Live
   ----------------------------------
   ✅ Status: Connected to Database
   🛠️  Mode:   ${process.env.NODE_ENV || 'development'}
   🔗 Port:   ${PORT}
+  🌍 Host:   0.0.0.0 (Publicly Accessible)
   ----------------------------------
       `);
     });
@@ -78,9 +83,15 @@ if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
 }
 
 app.use(passport.initialize());
-// Verify this file exists at ./src/config/passport.js
-if (typeof require('./src/config/passport') === 'function') {
-  require('./src/config/passport')(passport);
+
+// Verify and initialize passport config
+try {
+    const passportConfig = require('./src/config/passport');
+    if (typeof passportConfig === 'function') {
+        passportConfig(passport);
+    }
+} catch (err) {
+    console.warn('⚠️  Passport configuration not found or failed to load.');
 }
 
 // 6. API ROUTES
