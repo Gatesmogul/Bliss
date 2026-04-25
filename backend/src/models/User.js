@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+import bcrypt from 'bcryptjs';
+import mongoose from 'mongoose';
 
 /**
  * Bliss User Model
@@ -22,7 +22,6 @@ const userSchema = new mongoose.Schema(
     profileImage: { type: String },
     
     // --- Interests & Compatibility ---
-    // Added for the matching algorithm compatibility scoring
     interestTags: [{ type: String }], 
 
     // --- Verification System ---
@@ -49,7 +48,7 @@ const userSchema = new mongoose.Schema(
     lastLogin: { type: Date },
   },
   {
-    timestamps: true, // Captures 'createdAt' and 'updatedAt'
+    timestamps: true,
   }
 );
 
@@ -71,7 +70,6 @@ userSchema.pre('save', async function (next) {
 
 /**
  * Instance Method: Compare Password
- * Used during the login process to verify the user.
  */
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
@@ -79,7 +77,6 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 
 /**
  * Indexing for search performance
- * Added interestTags to indexing for faster filtering during discovery
  */
 userSchema.index({ email: 1 });
 userSchema.index({ country: 1, gender: 1 });
@@ -87,4 +84,4 @@ userSchema.index({ interestTags: 1 });
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+export default User;

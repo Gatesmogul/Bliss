@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const matchSchema = new mongoose.Schema(
   {
@@ -55,4 +55,5 @@ const matchSchema = new mongoose.Schema(
 matchSchema.index({ users: 1 });
 
 const Match = mongoose.model('Match', matchSchema);
-module.exports = Match;
+
+export default Match;

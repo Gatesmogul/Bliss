@@ -1,7 +1,8 @@
-const express = require('express');
+import express from 'express';
+import { protect } from '../middleware/authMiddleware.js';
+import User from '../models/User.js';
+
 const router = express.Router();
-const User = require('../models/User');
-const { protect, isVerified } = require('../middleware/authMiddleware');
 
 /**
  * User Management Routes
@@ -85,4 +86,4 @@ router.delete('/profile', protect, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

@@ -1,11 +1,11 @@
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
 /**
  * Email Service
  * Handles sending system emails like Verification, Password Reset, etc.
  */
 
-// 1. Create a transporter using your email provider (Gmail, SendGrid, Mailtrap, etc.)
+// 1. Create a transporter using your email provider
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
@@ -20,8 +20,8 @@ const transporter = nodemailer.createTransport({
  * @param {string} email - Recipient email
  * @param {string} token - Unique verification token
  */
-exports.sendVerificationEmail = async (email, token) => {
-  // Construct the verification URL (points to your backend or frontend)
+export const sendVerificationEmail = async (email, token) => {
+  // Construct the verification URL
   const verificationUrl = `${process.env.APP_URL}/api/auth/verify-email/${token}`;
 
   const mailOptions = {

@@ -1,8 +1,9 @@
-const express = require('express');
+import express from 'express';
+import { isVerified, protect } from '../middleware/authMiddleware.js';
+import Match from '../models/Match.js';
+import Message from '../models/Message.js';
+
 const router = express.Router();
-const { protect, isVerified } = require('../middleware/authMiddleware');
-const Message = require('../models/Message');
-const Match = require('../models/Match');
 
 /**
  * Chat & Messaging Routes
@@ -76,4 +77,4 @@ router.post('/:matchId', protect, isVerified, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

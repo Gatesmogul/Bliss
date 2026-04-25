@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 /**
  * Database Connection Management
@@ -13,7 +13,6 @@ const connectDB = async () => {
 
     const conn = await mongoose.connect(process.env.MONGO_URI, {
       // autoIndex is useful in development but can be heavy in production.
-      // It is kept true here to ensure your schemas' indexes are built.
       autoIndex: true,
       // Maximum time to wait for a connection before failing
       connectTimeoutMS: 10000, 
@@ -31,7 +30,6 @@ const connectDB = async () => {
 
 /**
  * Lifecycle Event Listeners
- * Monitor the health of the connection throughout the app's runtime.
  */
 mongoose.connection.on('connected', () => {
   console.log('📡 Mongoose connection established.');
@@ -47,7 +45,6 @@ mongoose.connection.on('disconnected', () => {
 
 /**
  * Graceful Shutdown Handler
- * Ensures that all database operations finish before the process exits.
  */
 const gracefulShutdown = async (msg, callback) => {
   try {
@@ -74,4 +71,4 @@ process.on('SIGTERM', () => {
   });
 });
 
-module.exports = connectDB;
+export default connectDB;

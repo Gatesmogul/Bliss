@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 /**
  * Message Model
@@ -55,4 +55,4 @@ messageSchema.index({ sender: 1 });
 
 const Message = mongoose.model('Message', messageSchema);
 
-module.exports = Message;
+export default Message;

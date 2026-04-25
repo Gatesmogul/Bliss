@@ -1,14 +1,14 @@
-const User = require('../models/User');
-const generateToken = require('../utils/generateToken');
-const crypto = require('crypto');
-const { sendVerificationEmail } = require('../services/emailService');
+import crypto from 'crypto';
+import User from '../models/User.js';
+import { sendVerificationEmail } from '../services/emailService.js';
+import generateToken from '../utils/generateToken.js';
 
 /**
  * @desc    Register new user & send verification email
  * @route   POST /api/auth/register
  * @access  Public
  */
-exports.registerUser = async (req, res) => {
+export const registerUser = async (req, res) => {
   try {
     const { 
       fullName, email, password, gender, age, 
@@ -65,7 +65,7 @@ exports.registerUser = async (req, res) => {
  * @route   POST /api/auth/login
  * @access  Public
  */
-exports.loginUser = async (req, res) => {
+export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -84,7 +84,7 @@ exports.loginUser = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         isEmailVerified: user.isEmailVerified,
-        token: generateToken(user._id), // Called from imported utility
+        token: generateToken(user._id), 
         message: verificationReminder
       });
     } else {
@@ -100,7 +100,7 @@ exports.loginUser = async (req, res) => {
  * @route   GET /api/auth/profile
  * @access  Private
  */
-exports.getMe = async (req, res) => {
+export const getMe = async (req, res) => {
   try {
     // req.user is populated by the protect middleware
     const user = await User.findById(req.user._id).select('-password');

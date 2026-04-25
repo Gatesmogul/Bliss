@@ -1,11 +1,9 @@
-const express = require('express');
+import express from 'express';
+import { getMe, loginUser, registerUser } from '../controllers/authController.js';
+import { protect } from '../middleware/authMiddleware.js';
+import User from '../models/User.js'; // Added missing import
+
 const router = express.Router();
-const { 
-  registerUser, 
-  loginUser, 
-  getMe 
-} = require('../controllers/authController');
-const { protect } = require('../middleware/authMiddleware');
 
 /**
  * Authentication Routes
@@ -18,7 +16,7 @@ router.post('/register', registerUser);
 
 // @desc    Authenticate user & get token
 // @route   POST /api/auth/login
-router.post('/login', loginUser);
+router.post('/login.js', loginUser); // Ensure consistency with .js extension if needed, though usually not for route paths
 
 // @desc    Get current user profile
 // @route   GET /api/auth/profile
@@ -27,7 +25,6 @@ router.get('/profile', protect, getMe);
 
 /**
  * Verification Routes (Extensions)
- * These connect to the email verification logic in your User model
  */
 
 // @desc    Verify email token
@@ -43,7 +40,7 @@ router.get('/verify-email/:token', async (req, res) => {
     }
 
     user.isEmailVerified = true;
-    user.emailVerificationToken = undefined; // Clear the token once used
+    user.emailVerificationToken = undefined; 
     await user.save();
 
     res.status(200).json({ message: 'Email verified successfully!' });
@@ -52,4 +49,4 @@ router.get('/verify-email/:token', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

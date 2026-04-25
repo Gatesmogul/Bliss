@@ -2,7 +2,7 @@
  * Not Found Middleware
  * Catches any request to a route that hasn't been defined.
  */
-const notFound = (req, res, next) => {
+export const notFound = (req, res, next) => {
   const error = new Error(`Not Found - ${req.originalUrl}`);
   res.status(404);
   next(error);
@@ -12,7 +12,7 @@ const notFound = (req, res, next) => {
  * Global Error Handler
  * Overrides the default Express error handler to provide clean JSON responses.
  */
-const errorHandler = (err, req, res, next) => {
+export const errorHandler = (err, req, res, next) => {
   // Sometimes errors don't have a status code, default to 500 (Server Error)
   const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
   
@@ -24,5 +24,3 @@ const errorHandler = (err, req, res, next) => {
     stack: process.env.NODE_ENV === 'production' ? '🥞' : err.stack,
   });
 };
-
-module.exports = { notFound, errorHandler };

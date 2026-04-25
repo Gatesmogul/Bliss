@@ -1,5 +1,5 @@
-const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
-const User = require('../models/User'); // Ensure this path matches your User model
+import { ExtractJwt, Strategy as JwtStrategy } from 'passport-jwt';
+import User from '../models/User.js'; // Added .js extension for ESM
 
 /**
  * Passport JWT Strategy Configuration
@@ -13,7 +13,7 @@ const options = {
   secretOrKey: process.env.JWT_SECRET,
 };
 
-module.exports = (passport) => {
+const passportConfig = (passport) => {
   passport.use(
     new JwtStrategy(options, async (jwt_payload, done) => {
       try {
@@ -35,3 +35,5 @@ module.exports = (passport) => {
     })
   );
 };
+
+export default passportConfig;

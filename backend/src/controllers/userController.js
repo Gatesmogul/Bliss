@@ -1,11 +1,11 @@
-const User = require('../models/User');
+import User from '../models/User.js';
 
 /**
  * @desc    Get discovery feed (Verified users, same country, opposite gender)
  * @route   GET /api/matches/discovery
  * @access  Private
  */
-exports.getDiscoveryFeed = async (req, res) => {
+export const getDiscoveryFeed = async (req, res) => {
   try {
     const currentUser = req.user;
 
@@ -36,7 +36,7 @@ exports.getDiscoveryFeed = async (req, res) => {
  * @route   POST /api/matches/connect/:id
  * @access  Private
  */
-exports.sendConnectionRequest = async (req, res) => {
+export const sendConnectionRequest = async (req, res) => {
   try {
     const targetUserId = req.params.id;
     const senderId = req.user._id;
@@ -74,7 +74,7 @@ exports.sendConnectionRequest = async (req, res) => {
  * @route   PUT /api/matches/respond/:requestId
  * @access  Private
  */
-exports.respondToRequest = async (req, res) => {
+export const respondToRequest = async (req, res) => {
   try {
     const { action } = req.body; // 'accept' or 'reject'
     const currentUser = await User.findById(req.user._id);
