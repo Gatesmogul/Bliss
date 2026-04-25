@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "Bliss",
+    "slug": "bliss",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/Bliss-Icon.png",
+    "scheme": "bliss",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.techcrush.bliss"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/Bliss-Icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.techcrush.bliss"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/Bliss-Icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-localization"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      }
+    }
+  }
+}
