@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "android": "expo start --android",
     "dev": "nodemon server.js",
     "expo": "expo start"
   },
