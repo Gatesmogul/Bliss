@@ -13,6 +13,7 @@ import { fileURLToPath } from 'url';
 
 // 1. IMPORT CONFIGS & MIDDLEWARE
 import connectDB from './src/config/db.js';
+import passportConfig from './src/config/passport.js'; // Direct import is safer
 import { errorHandler, notFound } from './src/middleware/errorMiddleware.js';
 
 // 2. IMPORT ROUTE FILES
@@ -30,13 +31,54 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// 3. GLOBAL MIDDLEWARES
+app.use(helmet());
+
+app.use(cors({
+  origin: process.env.CLIENT_URL || '*', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true
+}));
+
+app.use(express.json({ limit: '10mb' })); 
+app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+
+// 4. LOGGER & AUTH
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+app.use(passport.initialize());
+passportConfig(passport); // Initialize passport with the imported config
+
+// 5. API ROUTES
+app.use('/api/auth', authRoutes);
+app.use('/api/matches', matchRoutes);
+app.use('/api/chats', chatRoutes);
+app.use('/api/users', userRoutes);
+
+// 6. HEALTH CHECK
+app.get('/health', (req, res) => {
+  res.status(200).json({ 
+    success: true,
+    message: 'Bliss API is operational',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// 7. ERROR HANDLING
+app.use(notFound);      
+app.use(errorHandler);  
+
 /**
- * 3. DATABASE & SERVER INITIALIZATION
+ * 8. DATABASE & SERVER INITIALIZATION
  */
 const startServer = async () => {
   try {
-    if (!process.env.MONGO_URI && !process.env.DATABASE_URL) {
-      console.warn('⚠️  WARNING: Database connection string is missing in .env');
+    const MONGO_URI = process.env.MONGO_URI || process.env.DATABASE_URL;
+    
+    if (!MONGO_URI) {
+      throw new Error('Database connection string is missing in .env');
     }
 
     await connectDB();
@@ -55,8 +97,9 @@ const startServer = async () => {
       `);
     });
 
+    // Handle Graceful Shutdown
     process.on('unhandledRejection', (err) => {
-      console.error(`🛑 Server Error: ${err.message}`);
+      console.error(`🛑 Unhandled Rejection: ${err.message}`);
       server.close(() => process.exit(1));
     });
 
@@ -66,54 +109,4 @@ const startServer = async () => {
   }
 };
 
-// 4. GLOBAL MIDDLEWARES
-app.use(helmet());
-
-app.use(cors({
-  origin: process.env.CLIENT_URL || '*', 
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true
-}));
-
-app.use(express.json({ limit: '10mb' })); 
-app.use(express.urlencoded({ extended: false, limit: '10mb' }));
-
-// 5. LOGGER & AUTH
-if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
-  app.use(morgan('dev'));
-}
-
-app.use(passport.initialize());
-
-// Verify and initialize passport config
-try {
-    // Note: In ESM, you must import the default export
-    const { default: passportConfig } = await import('./src/config/passport.js');
-    if (typeof passportConfig === 'function') {
-        passportConfig(passport);
-    }
-} catch (err) {
-    console.warn('⚠️  Passport configuration not found or failed to load.', err.message);
-}
-
-// 6. API ROUTES
-app.use('/api/auth', authRoutes);
-app.use('/api/matches', matchRoutes);
-app.use('/api/chats', chatRoutes);
-app.use('/api/users', userRoutes);
-
-// 7. HEALTH CHECK
-app.get('/health', (req, res) => {
-  res.status(200).json({ 
-    success: true,
-    message: 'Bliss API is operational',
-    timestamp: new Date().toISOString()
-  });
-});
-
-// 8. ERROR HANDLING
-app.use(notFound);      
-app.use(errorHandler);  
-
-// EXECUTE
 startServer();
