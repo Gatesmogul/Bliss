@@ -24,7 +24,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// FIXED: Since server.js is in /backend, '..' takes us to the project root
+// Since server.js is in /backend, '..' takes us to the true project root
 const projectRoot = path.resolve(__dirname, '..'); 
 
 const app = express();
@@ -79,7 +79,7 @@ app.get('/health', (req, res) => {
 
 // --- FRONTEND INTEGRATION ---
 if (process.env.NODE_ENV === 'production') {
-  // FIXED: Points to /app/dist correctly from the root
+  // This correctly points to Bliss/app/dist
   const frontendBuildPath = path.join(projectRoot, 'app', 'dist');
 
   app.use(express.static(frontendBuildPath));
