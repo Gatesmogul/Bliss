@@ -24,13 +24,13 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// This ensures we get the true root of the project even when running from a subfolder
-const projectRoot = path.resolve(); 
+// Standardize project root: Move up two levels from /app/backend to get to the root
+const projectRoot = path.resolve(__dirname, '..', '..'); 
 
 const app = express();
 
 app.use(helmet({
-  contentSecurityPolicy: false, 
+  contentSecurityPolicy: false, // Required to allow the frontend to talk to the backend on the same URL
 }));
 
 const allowedOrigins = [
@@ -63,7 +63,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use(passport.initialize());
 passportConfig(passport); 
 
-// API ROUTES
+// 5. API ROUTES
 app.use('/api/auth', authRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/chats', chatRoutes);
@@ -77,15 +77,16 @@ app.get('/health', (req, res) => {
   });
 });
 
-// --- FRONTEND INTEGRATION (Path updated for Root package.json) ---
+// --- FRONTEND INTEGRATION ---
 if (process.env.NODE_ENV === 'production') {
-  // We look for 'app/dist' relative to the project root
+  // Finds /app/dist relative to the standard project root
   const frontendBuildPath = path.join(projectRoot, 'app', 'dist');
 
+  // Serve static files from the Expo web build
   app.use(express.static(frontendBuildPath));
 
   app.get('*', (req, res) => {
-    // Serve frontend for all non-API routes
+    // If the request is NOT for an API, serve the index.html
     if (!req.path.startsWith('/api/')) {
         res.sendFile(path.join(frontendBuildPath, 'index.html'));
     } else {
@@ -98,6 +99,7 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
+// 7. ERROR HANDLING
 app.use(notFound);      
 app.use(errorHandler);  
 
