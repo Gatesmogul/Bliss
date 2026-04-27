@@ -11,12 +11,13 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  Keyboard
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import axiosInstance from '../../services/axiosInstance';
 import { useAuthStore } from '../../store/authStore';
 
-// Interface for Auth Store
 interface AuthState {
   setToken: (token: string) => void;
   setUser: (user: any) => void;
@@ -29,30 +30,28 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignIn = async () => {
-    // 1. Validation
     if (!email || !password) {
-      Alert.alert("Error", "Please enter both email and password.");
+      Alert.alert("Missing Information", "Please enter both your email and password.");
       return;
     }
 
+    // Ensures the UI doesn't jump and the button registers the press properly
+    Keyboard.dismiss();
     setLoading(true);
 
     try {
-      // 2. API Call
       const response = await axiosInstance.post('/api/auth/login', {
         email: email.trim().toLowerCase(),
         password: password,
       });
 
-      // 3. Store Token & User Data
       const { token, user } = response.data;
       if (token) {
         setToken(token);
         if (user) setUser(user);
-        
-        // 4. Navigate to Main App
         router.replace('/(tabs)/home' as Href);
       }
     } catch (error: any) {
@@ -66,40 +65,59 @@ export default function SignIn() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.container} bounces={false}>
-          <View style={styles.header}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContainer} 
+          bounces={false}
+          keyboardShouldPersistTaps="handled" // FIXED: Ensures buttons respond when keyboard is open
+        >
+          <View style={styles.headerSection}>
             <Text style={styles.title}>Welcome Back</Text>
             <Text style={styles.subtitle}>Sign in to continue your journey with Bliss.</Text>
           </View>
 
-          <View style={styles.form}>
+          <View style={styles.formSection}>
             <Text style={styles.label}>Email Address</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="example@email.com"
-              placeholderTextColor="#999"
-              keyboardType="email-address"
-              autoCapitalize="none"
-              value={email}
-              onChangeText={setEmail}
-            />
+            <View style={styles.inputContainer}>
+              <Ionicons name="mail-outline" size={20} color="#FF3B5C" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="example@email.com"
+                placeholderTextColor="#aaa"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={email}
+                onChangeText={setEmail}
+              />
+            </View>
 
             <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              placeholderTextColor="#999"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-            />
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed-outline" size={20} color="#FF3B5C" style={styles.icon} />
+              <TextInput
+                style={styles.input}
+                placeholder="••••••••"
+                placeholderTextColor="#aaa"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons 
+                  name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                  size={20} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
+            </View>
 
             <TouchableOpacity 
               onPress={() => router.push('/(auth)/forgot-password' as Href)}
               style={styles.forgotBtn}
+              activeOpacity={0.7}
             >
               <Text style={styles.forgotText}>Forgot Password?</Text>
             </TouchableOpacity>
@@ -118,8 +136,11 @@ export default function SignIn() {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.footer}>
-            <TouchableOpacity onPress={() => router.push('/(auth)/sign-up' as Href)}>
+          <View style={styles.footerSection}>
+            <TouchableOpacity 
+              onPress={() => router.push('/(auth)/sign-up' as Href)}
+              activeOpacity={0.7}
+            >
               <Text style={styles.footerText}>
                 Don't have an account? <Text style={styles.bold}>Sign Up</Text>
               </Text>
@@ -133,38 +154,40 @@ export default function SignIn() {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#fff' },
-  container: { flexGrow: 1, padding: 24, justifyContent: 'center' },
-  header: { marginBottom: 40 },
-  title: { fontSize: 32, fontWeight: 'bold', color: '#1a1a1a' },
-  subtitle: { fontSize: 16, color: '#666', marginTop: 10 },
-  form: { width: '100%' },
-  label: { fontSize: 14, fontWeight: '700', color: '#333', marginBottom: 8, marginLeft: 4 },
-  input: { 
-    backgroundColor: '#f8f8f8', 
-    padding: 16, 
-    borderRadius: 12, 
-    marginBottom: 20, 
-    fontSize: 16, 
-    color: '#333', 
-    borderWidth: 1, 
-    borderColor: '#eee' 
+  scrollContainer: { flexGrow: 1, padding: 28, justifyContent: 'center' },
+  headerSection: { marginBottom: 40 },
+  title: { fontSize: 34, fontWeight: 'bold', color: '#1a1a1a', letterSpacing: -0.5 },
+  subtitle: { fontSize: 16, color: '#777', marginTop: 8, lineHeight: 22 },
+  formSection: { width: '100%' },
+  label: { fontSize: 14, fontWeight: '700', color: '#444', marginBottom: 10, marginLeft: 4 },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f9f9f9',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
   },
-  forgotBtn: { alignSelf: 'flex-end', marginBottom: 30 },
-  forgotText: { color: '#FF3B5C', fontWeight: '600', fontSize: 14 },
+  icon: { marginRight: 12 },
+  input: { flex: 1, paddingVertical: 18, fontSize: 16, color: '#333' },
+  forgotBtn: { alignSelf: 'flex-end', marginBottom: 35, padding: 5 },
+  forgotText: { color: '#FF3B5C', fontWeight: '700', fontSize: 14 },
   mainBtn: { 
     backgroundColor: '#FF3B5C', 
-    padding: 18, 
-    borderRadius: 12, 
+    padding: 20, 
+    borderRadius: 16, 
     alignItems: 'center', 
-    elevation: 2, 
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 2 }, 
-    shadowOpacity: 0.1, 
-    shadowRadius: 4 
+    shadowColor: '#FF3B5C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 4
   },
   btnDisabled: { opacity: 0.6 },
-  mainBtnText: { color: '#fff', fontSize: 18, fontWeight: '700' },
-  footer: { marginTop: 40 },
-  footerText: { textAlign: 'center', color: '#666' },
+  mainBtnText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  footerSection: { marginTop: 45 },
+  footerText: { textAlign: 'center', color: '#777', fontSize: 15 },
   bold: { color: '#FF3B5C', fontWeight: 'bold' }
 });
