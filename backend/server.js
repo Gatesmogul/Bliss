@@ -11,7 +11,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 
 import connectDB from './src/config/db.js';
-import passportConfig from './src/config/passport.js'; 
+import passportConfig from './src/config/passport.js';
 import { errorHandler, notFound } from './src/middleware/errorMiddleware.js';
 
 import authRoutes from './src/routes/authRoutes.js';
@@ -23,7 +23,9 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const rootPath = path.resolve();
+
+// This ensures we get the true root of the project even when running from a subfolder
+const projectRoot = path.resolve(); 
 
 const app = express();
 
@@ -75,16 +77,17 @@ app.get('/health', (req, res) => {
   });
 });
 
-// --- FRONTEND INTEGRATION (Updated for 'app' folder) ---
+// --- FRONTEND INTEGRATION (Path updated for Root package.json) ---
 if (process.env.NODE_ENV === 'production') {
-  // Pointing to the 'dist' folder inside your 'app' directory
-  const frontendBuildPath = path.join(rootPath, 'app', 'dist');
+  // We look for 'app/dist' relative to the project root
+  const frontendBuildPath = path.join(projectRoot, 'app', 'dist');
 
   app.use(express.static(frontendBuildPath));
 
   app.get('*', (req, res) => {
+    // Serve frontend for all non-API routes
     if (!req.path.startsWith('/api/')) {
-        res.sendFile(path.resolve(frontendBuildPath, 'index.html'));
+        res.sendFile(path.join(frontendBuildPath, 'index.html'));
     } else {
         res.status(404).json({ message: "API route not found" });
     }
