@@ -3,22 +3,23 @@ import { useAuthStore } from '../store/authStore';
 
 /**
  * Define the AuthState interface to fix the 'unknown' type errors.
- * This should match the properties defined in your authStore.ts
+ * This matches the properties defined in your authStore.ts
  */
 interface AuthState {
   token: string | null;
-  logout: () => void; // Changed from signout to logout to match standard naming
+  logout: () => void;
   isHydrated: boolean;
 }
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:10000/api;
+// FIXED: Added the missing closing quote after /api
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:10000/api';
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 15000, 
   headers: {
     'Content-Type': 'application/json',
-    Accept: 'application/json',
+    'Accept': 'application/json',
   },
 });
 
@@ -28,7 +29,7 @@ const axiosInstance: AxiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     // Explicitly cast getState as AuthState to resolve 'unknown' type error
-    const state = useAuthStore.getState() as AuthState;
+    const state = useAuthStore.getState() as unknown as AuthState;
     const token = state.token;
 
     if (token && config.headers) {
@@ -52,7 +53,7 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       console.warn('Session expired. Performing cleanup...');
       
-      const state = useAuthStore.getState() as AuthState;
+      const state = useAuthStore.getState() as unknown as AuthState;
       
       // Ensure the function exists before calling to prevent runtime crashes
       if (typeof state.logout === 'function') {
