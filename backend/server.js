@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url';
 
 // 1. IMPORT CONFIGS & MIDDLEWARE
 import connectDB from './src/config/db.js';
-import passportConfig from './src/config/passport.js'; // Direct import is safer
+import passportConfig from './src/config/passport.js'; 
 import { errorHandler, notFound } from './src/middleware/errorMiddleware.js';
 
 // 2. IMPORT ROUTE FILES
@@ -49,7 +49,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 app.use(passport.initialize());
-passportConfig(passport); // Initialize passport with the imported config
+passportConfig(passport); 
 
 // 5. API ROUTES
 app.use('/api/auth', authRoutes);
@@ -66,6 +66,11 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Root route to prevent "No open ports" error during Render health checks
+app.get('/', (req, res) => {
+  res.send('Bliss Backend is running.');
+});
+
 // 7. ERROR HANDLING
 app.use(notFound);      
 app.use(errorHandler);  
@@ -75,22 +80,31 @@ app.use(errorHandler);
  */
 const startServer = async () => {
   try {
-    const MONGO_URI = process.env.MONGO_URI || process.env.DATABASE_URL;
+    // Render often uses MONGO_URI, but some use DATABASE_URL. 
+    const mongoURI = process.env.MONGO_URI || process.env.DATABASE_URL;
     
-    if (!MONGO_URI) {
-      throw new Error('Database connection string is missing in .env');
+    // Log the presence of the URI without exposing the secret
+    console.log('--- Startup Check ---');
+    console.log(`Database URI found: ${mongoURI ? 'YES' : 'NO'}`);
+    console.log(`Node Environment: ${process.env.NODE_ENV}`);
+    
+    if (!mongoURI) {
+      console.error('❌ CRITICAL ERROR: Database connection string (MONGO_URI) is missing in environment variables.');
+      process.exit(1); 
     }
 
+    // Connect to Database
     await connectDB();
     
+    // Render defaults to port 10000. We MUST listen on 0.0.0.0
     const PORT = process.env.PORT || 10000;
 
     const server = app.listen(PORT, '0.0.0.0', () => {
       console.log(`
-  🚀 Bliss API is Live (ESM Mode)
+  🚀 Bliss API is Live
   ----------------------------------
   ✅ Status: Connected to Database
-  🛠️  Mode:   ${process.env.NODE_ENV || 'development'}
+  🛠️  Mode:   ${process.env.NODE_ENV || 'production'}
   🔗 Port:   ${PORT}
   🌍 Host:   0.0.0.0
   ----------------------------------
@@ -105,7 +119,8 @@ const startServer = async () => {
 
   } catch (error) {
     console.error(`❌ Initialization Failed: ${error.message}`);
-    process.exit(1);
+    // Delay exit slightly to ensure logs are sent to Render dashboard
+    setTimeout(() => process.exit(1), 1000);
   }
 };
 
